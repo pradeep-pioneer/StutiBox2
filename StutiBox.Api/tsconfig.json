@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "baseUrl": "ClientApp",
+    "module": "es6",
+    "moduleResolution": "node",
+    "target": "es6",
+    "jsx": "react",
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    "skipDefaultLibCheck": true,
+    "strict": false,
+    "noImplicitReturns": true,
+    "allowUnusedLabels": false,
+    "allowSyntheticDefaultImports": true,
+    "noFallthroughCasesInSwitch": true,
+    "lib": ["es6", "dom"],
+    "types": ["webpack-env"],
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  },
+  "include": ["ClientApp/*", "ClientApp/custom_typings/custom.d.ts"],
+  "exclude": ["node_modules", "wwwroot"]
+}

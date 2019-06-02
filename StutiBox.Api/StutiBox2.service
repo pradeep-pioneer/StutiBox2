@@ -1,0 +1,15 @@
+[Unit]
+Description=StutiBox2 Audio and UI
+After=network.target
+[Service]
+Environment=DEVICE=pi
+ExecStart=/home/pi/StutiBox/StutiBox.Api
+WorkingDirectory=/home/pi/StutiBox/
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=StutiBox2
+Restart=always
+RestartSec=10
+[Install]
+WantedBy=multi-user.target
+Alias=StutiBox2.service
