@@ -7,6 +7,10 @@ echo "**************************************************************"
 echo "remove the artificats locally"
 rm -rf bin/release/
 
+echo "building client package..."
+yarn
+yarn build:dev
+
 echo "restoring packages ..."
 dotnet restore
 echo "publishing ..."

@@ -1,16 +1,17 @@
 import * as React from 'react'
-import { Row, Col, Card, List, Spin, Icon, Button } from "antd"
-import * as Axios from 'axios'
+import { Row, Col, Card } from "antd"
 import "antd/dist/antd.css";
 import "../Styles/common.less"
 import "../Styles/custom.less"
-import {PlaybackState, RequestType, IPlayerStatus} from '../Models/Player'
-import {ILibraryState, IMediaItem} from '../Models/Library'
+import {PlaybackState, IPlayerStatus} from '../Models/Player'
+import {ILibraryState} from '../Models/Library'
 import LibraryService from '../Services/Library'
 import PlayerService from '../Services/Player'
 import {MediaItemsGrid} from '../Components/MediaItemsGrid'
 import {MediaItemsHeader} from '../Components/MediaItemsHeader'
 import {PlayerHeader} from '../Components/PlayerHeader'
+import {PhotoSlider} from '../Components/PhotoSlider'
+
 export interface IHomeState {
     loaded: boolean
     libraryStatus?: ILibraryState
@@ -87,6 +88,7 @@ class Home extends React.Component<{},IHomeState> {
                                 seekCommand={this.seek}/>
                             }
                         className="product-card">
+                            <PhotoSlider/>
                     </Card>
                 </Col>
                 <Col xs={{ span: 24 }} sm={{ span: 24 }} md={{ span: 12 }} lg={{ span: 12 }} xl={{ span: 12 }} xxl={{ span: 12 }}>

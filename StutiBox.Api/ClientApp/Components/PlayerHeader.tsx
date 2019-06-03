@@ -55,14 +55,14 @@ export class PlayerHeader extends React.Component<IPlayerHeaderProps>{
                         unCheckedChildren={<Icon type='retweet'/>}
                         onClick={()=>this.props.repeatToggleCommand()}/>
                 </Col>
-                <Col xs={{span: 4}} sm={{span: 4}} md={{span: 4}} lg={{span: 4}} xl={{span: 4}} xxl={{span: 2}}>
+                <Col xs={{span: 4}} sm={{span: 4}} md={{span: 4}} lg={{span: 4}} xl={{span: 6}} xxl={{span: 6}}>
                     <Slider
                         min={0} max={100}
                         style={{width: "100px"}} 
                         value={(this.props.appState.playerStatus)?this.props.appState.playerStatus.volume: 50}
                         onChange={(value)=>this.props.volumeCommand(value)}/>
                 </Col>
-                <Col xs={{span: 24}} sm={{span:24}} md={{span: 24}} lg={{span: 24}} xl={{span: 12}} xxl={{span: 12}}>
+                <Col xs={{span: 24}} sm={{span:24}} md={{span: 24}} lg={{span: 24}} xl={{span: 10}} xxl={{span: 10}}>
                     <Statistic
                         style={{marginLeft: "10px"}}
                         title="Volume"
@@ -74,7 +74,7 @@ export class PlayerHeader extends React.Component<IPlayerHeaderProps>{
                 </Col>
             </Row>
             <Row gutter={8}>
-                <Col xs={{span: 12}} sm={{span: 12}} md={{span: 12}} lg={{span: 10}} xl={{span: 12}} xxl={{span: 12}}>
+                <Col xs={{span: 12}} sm={{span: 12}} md={{span: 12}} lg={{span: 10}} xl={{span: 14}} xxl={{span: 14}}>
                     <Slider
                         disabled={!(this.props.appState.playerStatus && this.props.appState.playerStatus.playerState==PlaybackState.Playing)}
                         min={0}
@@ -87,7 +87,7 @@ export class PlayerHeader extends React.Component<IPlayerHeaderProps>{
                         value={(this.props.appState.playerStatus)?this.props.appState.playerStatus.currentPositionSeconds: 50}
                         onChange={(value)=>this.props.seekCommand(value)}/>
                 </Col>
-                <Col xs={{span: 24}} sm={{span:24}} md={{span: 24}} lg={{span: 24}} xl={{span: 12}} xxl={{span: 12}}>
+                <Col xs={{span: 24}} sm={{span:24}} md={{span: 24}} lg={{span: 24}} xl={{span: 10}} xxl={{span: 10}}>
                     <Statistic
                         style={{marginLeft: "10px"}}
                         title={(
