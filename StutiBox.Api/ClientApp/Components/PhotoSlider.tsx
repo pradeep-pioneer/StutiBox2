@@ -26,16 +26,19 @@ export class PhotoSlider extends React.Component {
     var settings = {
       dots: true,
       infinite: true,
-      speed: 500,
-      slidesToShow: 1,
+      slidesToShow: 3,
       slidesToScroll: 1,
+      autoplay: true,
+      speed: 2000,
+      autoplaySpeed: 2000,
+      cssEase: "linear"
     };
     return (
       <Slider {...settings} autoplay>
         {pictures.map(picture=>{
           return(
-            <div id={picture}>
-              <img style={{height:"30rem", margin: "0 auto"}} src={picture} />
+            <div id={picture} key={picture}>
+              <img style={{height:"40rem", margin: "0 auto"}} src={picture} />
             </div>
           )
         })}

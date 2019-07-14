@@ -1,23 +1,14 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Swashbuckle.AspNetCore.Swagger;
 using Microsoft.OpenApi.Models;
-using Microsoft.Extensions.Options;
 using StutiBox.Api.Config;
 using StutiBox.Api.Actors;
-using Microsoft.AspNetCore.Cors.Infrastructure;
+using StutiBox.Api.Hubs;
 using Microsoft.AspNetCore.SpaServices.Webpack;
-
+using StutiBox.Api.Workers;
 namespace StutiBox.Api
 {
     public class Startup
@@ -66,6 +57,8 @@ namespace StutiBox.Api
             services.AddSingleton<IBassActor, BassActor>();
             services.AddSingleton<ILibraryActor,LibraryActor>();
             services.AddSingleton<IPlayerActor,PlayerActor>();
+            services.AddSignalR();
+            services.AddHostedService<StatusNotificationWorker>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -102,6 +95,8 @@ namespace StutiBox.Api
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapFallbackToController("Index", "Home");
+                endpoints.MapHub<PlayerStatusHub>("/playerstatus");
+                endpoints.MapHub<LibraryStatusHub>("/librarystatus");
             });
         }
     }

@@ -12,7 +12,6 @@ namespace StutiBox.Api.Actors
 
 		public EventHandler<BassEventArgs> BassActorEvent { get; set; }
 		public ChannelStates State { get; set; }
-		public bool Repeat { get; private set; }
 		public int Stream { get; private set; }
 		public long CurrentPositionBytes => Stream != 0 ? Bass.BASS_ChannelGetPosition(Stream) : 0;
 		public byte CurrentVolume => (byte)(Bass.BASS_GetVolume()*100f);
@@ -59,7 +58,6 @@ namespace StutiBox.Api.Actors
             }
 
             State = ChannelStates.Ready;
-			Repeat = true;
         }
 
         public string[] GetTags(int stream, bool closeStream = false)
@@ -106,17 +104,6 @@ namespace StutiBox.Api.Actors
 			var timeSpan = TimeSpan.FromSeconds(lengthSeconds);
 			var lengthTimeString = timeSpan.ToString(timeSpan.Hours > 0 ? @"hh\:mm\:ss" : @"mm\:ss");
 			return new { Tags = tags, LengthBytes = lengthBytes, LengthSeconds = lengthSeconds, LengthTimeString = lengthTimeString };
-		}
-
-		public bool ToggleRepeat()
-		{
-			if (State != ChannelStates.Faulted && State != ChannelStates.NotInitialized)
-			{
-				Repeat = !Repeat;
-				return true;
-			}
-			else
-				return false;
 		}
 
         public bool Play(string fullPath)
@@ -211,15 +198,7 @@ namespace StutiBox.Api.Actors
 			try
 			{
 				var eventType = BassEvent.PlaybackFinished;
-				if (Repeat)
-				{
-					Seek(0);
-					Bass.BASS_ChannelPlay(Stream, true);
-					eventType = BassEvent.PlaybackRestarting;
-					State = ChannelStates.Playing;
-				}
-				else
-					cleanupStream();
+				cleanupStream();
 				if (this.BassActorEvent != null)
 					BassActorEvent(this, new BassEventArgs(eventType));
 			}

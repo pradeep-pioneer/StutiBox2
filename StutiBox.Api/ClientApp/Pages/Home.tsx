@@ -1,106 +1,147 @@
-import * as React from 'react'
-import { Row, Col, Card } from "antd"
+import * as React from "react";
+import { Row, Col, Card, Button, Modal, Spin } from "antd";
 import "antd/dist/antd.css";
-import "../Styles/common.less"
-import "../Styles/custom.less"
-import {PlaybackState, IPlayerStatus} from '../Models/Player'
-import {ILibraryState} from '../Models/Library'
-import LibraryService from '../Services/Library'
-import PlayerService from '../Services/Player'
-import {MediaItemsGrid} from '../Components/MediaItemsGrid'
-import {MediaItemsHeader} from '../Components/MediaItemsHeader'
-import {PlayerHeader} from '../Components/PlayerHeader'
-import {PhotoSlider} from '../Components/PhotoSlider'
+import "../Styles/common.less";
+import "../Styles/custom.less";
+import { PlaybackState, IPlayerStatus } from "../Models/Player";
+import { ILibraryState } from "../Models/Library";
+import LibraryService from "../Services/Library";
+import PlayerService from "../Services/Player";
+import { MediaItemsGrid } from "../Components/MediaItemsGrid";
+import { PlayerHeader } from "../Components/PlayerHeader";
+import { PhotoSlider } from "../Components/PhotoSlider";
 
 export interface IHomeState {
-    loaded: boolean
-    libraryStatus?: ILibraryState
-    playerStatus?: IPlayerStatus
+  libraryStatus?: ILibraryState;
+  showPlayer: boolean;
+  showPlaylist: boolean;
+  message?: string;
+  playerStatus?: IPlayerStatus;
 }
 
-class Home extends React.Component<{},IHomeState> {
-    constructor(props) {
-        super(props)
-        this.state = {loaded: false, playerStatus:{playerState: PlaybackState.Stopped}, libraryStatus:{} }
-    }
+class Home extends React.Component<{}, IHomeState> {
+  constructor(props) {
+    super(props);
+    this.state = { showPlayer: false, showPlaylist: false };
+  }
 
-    async componentDidMount() {
-        var libState = await LibraryService.getLibraryItems()
-        var playerState = await PlayerService.GetPlayerStatus()
-        this.setState({libraryStatus: libState, playerStatus: playerState, loaded: true})
-        setInterval(()=>{
-            if(this.state.playerStatus && this.state.playerStatus.playerState===PlaybackState.Playing){
-                PlayerService.GetPlayerStatus()
-                    .then(latestStatus=>this.setState({playerStatus:latestStatus}))
-            }
-        },1500)
-    }
-    playSong=(id: number)=>{
-        PlayerService.PlayPause(id)
-            .then(result=>{
-                this.setState({playerStatus: result})
-            })
-    }
+  async componentDidMount() {
+    await LibraryService.initialize(this.updateLibraryState);
+    await PlayerService.initialize(this.updatePlayerState);
+  }
+  updateLibraryState = (status: ILibraryState) => {
+    this.setState({ libraryStatus: status });
+  };
+  updatePlayerState = (status: IPlayerStatus) => {
+    this.setState({ playerStatus: status });
+  };
+  playSong = async (id: number) => {
+    await PlayerService.PlayPause(id);
+  };
 
-    stop=()=>{
-        PlayerService.Stop()
-            .then(result=>{
-                this.setState({playerStatus:result})
-            })
-    }
+  enqueueSong=async(id: number) => {
+    await PlayerService.EnqueueSong(id);
+  }
 
-    refreshLibrary=()=>{
-        LibraryService.refreshLibrary()
-            .then(result=>{
-                this.setState({libraryStatus:result})
-                console.log(result)
-            })
-    }
+  stop = async () => {
+    await PlayerService.Stop();
+  };
 
-    toggleRepeat=()=>{
-        PlayerService.ToggleRepeat()
-            .then(result=>{this.setState({playerStatus: result})})
-    }
+  refreshLibrary = () => {
+    LibraryService.refreshLibrary();
+  };
 
-    setVolume=(volume: number)=>{
-        PlayerService.SetVolume(volume)
-            .then(result=>{this.setState({playerStatus: result})})
-    }
+  toggleRepeat = async () => {
+    await PlayerService.ToggleRepeat();
+  };
 
-    seek=(position: number)=>{
-        PlayerService.Seek(position)
-            .then(result=>{this.setState({playerStatus: result})})
-    }
+  setVolume = async (volume: number) => {
+    await PlayerService.SetVolume(volume);
+  };
 
-    render() {
-        return (
-            <Row gutter={5} style={{margin: "10px"}}>
-                <Col xs={{ span: 24 }} sm={{ span: 24 }} md={{ span: 12 }} lg={{ span: 12 }} xl={{ span: 12 }} xxl={{ span: 12 }}>
-                    <Card
-                        title={
-                            <PlayerHeader 
-                                appState={this.state} 
-                                refreshCommand={this.refreshLibrary} 
-                                stopCommand={this.stop}
-                                playPauseCommand={this.playSong}
-                                repeatToggleCommand={this.toggleRepeat}
-                                volumeCommand={this.setVolume}
-                                seekCommand={this.seek}/>
-                            }
-                        className="product-card">
-                            <PhotoSlider/>
-                    </Card>
-                </Col>
-                <Col xs={{ span: 24 }} sm={{ span: 24 }} md={{ span: 12 }} lg={{ span: 12 }} xl={{ span: 12 }} xxl={{ span: 12 }}>
-                    <Card
-                        title={<MediaItemsHeader appState={this.state} refreshCommand={this.refreshLibrary} stopCommand={this.stop}/>}
-                        className="product-card">
-                            <MediaItemsGrid libraryStatus={this.state.libraryStatus} playerStatus={this.state.playerStatus} playCommand={this.playSong}/>
-                    </Card>
-                </Col>
-            </Row>
-        )
+  seek = async (position: number) => {
+    await PlayerService.Seek(position);
+  };
+
+  playerModal = (show: boolean) => {
+    this.setState({ showPlayer: show });
+  };
+
+  isLoaded = () => {
+    return this.state.libraryStatus && this.state.playerStatus ? true : false;
+  };
+
+  render() {
+    if (this.isLoaded()) {
+      return (
+        <Row>
+          <Row>
+            <Col>
+              <div style={{ position: "absolute", zIndex: 2, top: "2rem", left: "2rem" }}>
+                <Button
+                  size="large"
+                  type="default"
+                  shape="circle-outline"
+                  icon={
+                    this.state.playerStatus.playerState
+                      ? this.state.playerStatus.playerState !=
+                        PlaybackState.Playing
+                        ? "play-circle"
+                        : ""
+                      : "play-circle"
+                  }
+                  onClick={() => this.playerModal(true)}
+                >
+                  <Spin
+                    size="small"
+                    spinning={
+                      this.state.playerStatus.playerState
+                        ? this.state.playerStatus.playerState ==
+                          PlaybackState.Playing
+                        : false
+                    }
+                  />
+                </Button>
+              </div>
+              <Card className="product-card">
+                <PhotoSlider />
+              </Card>
+            </Col>
+          </Row>
+          <Modal
+            width="95%"
+            style={{ top: "1rem"}}
+            visible={this.state.showPlayer}
+            onCancel={() => this.playerModal(false)}
+            onOk={() => this.playerModal(false)}
+          >
+            <Card
+              title={
+                <PlayerHeader
+                  appState={this.state}
+                  refreshCommand={this.refreshLibrary}
+                  stopCommand={this.stop}
+                  playPauseCommand={this.playSong}
+                  repeatToggleCommand={this.toggleRepeat}
+                  volumeCommand={this.setVolume}
+                  seekCommand={this.seek}
+                />
+              }
+              className="product-card"
+            >
+              <MediaItemsGrid enqueueCommand={this.enqueueSong}
+                libraryStatus={this.state.libraryStatus}
+                playerStatus={this.state.playerStatus}
+                playCommand={this.playSong}
+              />
+            </Card>
+          </Modal>
+        </Row>
+      );
+    } else {
+      return <Spin size="large" spinning={this.isLoaded()} />;
     }
+  }
 }
 
-export default Home
+export default Home;

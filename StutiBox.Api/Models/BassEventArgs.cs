@@ -10,6 +10,7 @@ namespace StutiBox.Api.Models
     public enum BassEvent
 	{
 		PlaybackRestarting = 0,
-        PlaybackFinished = 1
+        PlaybackFinished = 1,
+		NextRequested=2
 	}
 }

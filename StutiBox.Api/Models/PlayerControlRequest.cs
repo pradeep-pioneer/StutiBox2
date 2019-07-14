@@ -5,7 +5,7 @@ namespace StutiBox.Api.Models
 	{
 
 		public ControlRequest ControlRequest { get; set; }
-		public dynamic RequestData { get; set; }
+		public double RequestData { get; set; }
 	}
 
 	public enum ControlRequest

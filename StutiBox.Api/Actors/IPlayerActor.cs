@@ -17,5 +17,7 @@ namespace StutiBox.Api.Actors
 		bool Seek(double seconds);
 		bool ConversationStarted();
 		bool ConversationFinished();
+		bool Enqueue(int identifier);
+		bool Repeat {get;}
     }
 }

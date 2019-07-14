@@ -16,18 +16,20 @@ namespace StutiBox.Api.Actors
 		public IBassActor BassActor { get; private set; }
         public PlaybackState PlaybackState { get; internal set; }
 		public LibraryItem CurrentLibraryItem { get; private set; }
-
-
+		public Playlist NowPlaying {get; private set;}
+		public bool Repeat {get;private set;}
         public PlayerActor(ILibraryActor libraryActor, IBassActor bassActor)
         {
 			BassActor = bassActor;
 			BassActor.BassActorEvent += onBassEvent;
 			LibraryActor = libraryActor;
             PlaybackState = PlaybackState.NotInitialized;
+			NowPlaying = new Playlist();
 			if (bassActor.State == ChannelStates.Faulted)
 				PlaybackState = PlaybackState.Faulted;
 			else
 				PlaybackState = PlaybackState.Stopped;
+			Repeat=false;
         }
 
         private void onBassEvent(object sender, BassEventArgs args)
@@ -35,16 +37,31 @@ namespace StutiBox.Api.Actors
 			if (args.Event == BassEvent.PlaybackFinished)
 			{
 				PlaybackState = PlaybackState.Stopped;
-				CurrentLibraryItem = null;
+				var listItem = NowPlaying.Current();
+				if(listItem.Key<NowPlaying.Count-1)
+					Play(NowPlaying.Forward().Value);
+				else
+				{
+					if(Repeat)
+						Play(NowPlaying.Forward().Value);
+				}
 			}
-				
-			if (args.Event == BassEvent.PlaybackRestarting)
-				PlaybackState = PlaybackState.Playing;
 		}
 
         public bool Play(int identifier)
         {
 			var item = LibraryActor.GetItem(identifier);
+			if(item!=null)
+			{
+				NowPlaying = new Playlist();
+				var currentItem = NowPlaying.Enqueue(item);
+				return Play(currentItem.Value);
+			}
+			return false;
+        }
+
+		public bool Play(LibraryItem item)
+        {
 			var result = BassActor.Play(item.FullPath);
 			if (result)
 			{
@@ -75,15 +92,38 @@ namespace StutiBox.Api.Actors
 			var result = BassActor.Stop();
 			if (result)
 			{
-				CurrentLibraryItem = null;
+				CurrentLibraryItem = NowPlaying.Current().Value;
 				PlaybackState = PlaybackState.Stopped;
 			}
 			return result;
         }
 
+		public bool Enqueue(int identifier)
+		{
+			var item = LibraryActor.GetItem(identifier);
+			if(item!=null)
+			{
+				var added = NowPlaying.Enqueue(item);
+				if(added.Value!=null)
+				{
+					if(PlaybackState==PlaybackState.Stopped)
+					{
+						var current = NowPlaying.Forward();
+						return Play(current.Value);
+					}
+					return true;
+				}
+			}
+			return false;
+		}
+
 		public bool Volume(byte volume) => BassActor.Volume(volume);
 
-		public bool ToggleRepeat() => BassActor.ToggleRepeat();
+		public bool ToggleRepeat()
+		{
+			Repeat=!Repeat;
+			return true;
+		}
 
 		public bool Seek(double seconds) => BassActor.Seek(seconds);
 

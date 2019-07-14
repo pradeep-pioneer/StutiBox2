@@ -6,6 +6,7 @@ interface IMediaItemsGridProps {
     libraryStatus?: ILibraryState
     playerStatus?: IPlayerStatus
     playCommand: any
+    enqueueCommand: any
 }
 export class MediaItemsGrid extends React.Component<IMediaItemsGridProps> {
     constructor(props: IMediaItemsGridProps) {
@@ -22,9 +23,15 @@ export class MediaItemsGrid extends React.Component<IMediaItemsGridProps> {
                                 shape='circle' 
                                 icon={this.props.playerStatus.currentLibraryItem && this.props.playerStatus.currentLibraryItem.id===item.id && this.props.playerStatus.playerState===PlaybackState.Playing?'pause-circle':'play-circle' }
                                 onClick={()=>this.props.playCommand(item.id)}
-                            />]
+                            />,
+                            <Button
+                                type={this.props.playerStatus.currentLibraryItem && this.props.playerStatus.currentLibraryItem.id===item.id && this.props.playerStatus.playerState===PlaybackState.Playing?'primary':'default' }
+                                shape='circle' 
+                                icon={this.props.playerStatus.currentLibraryItem && this.props.playerStatus.currentLibraryItem.id===item.id && this.props.playerStatus.playerState===PlaybackState.Playing?'pause-circle':'plus-circle' }
+                                onClick={()=>this.props.enqueueCommand(item.id)}/>]
                         }>
                         <List.Item.Meta title={item.name} description={item.fullPath}/>
+                        <div><List.Item.Meta title={item.lengthTimeString}/></div>
                     </List.Item>
                 )}
             >

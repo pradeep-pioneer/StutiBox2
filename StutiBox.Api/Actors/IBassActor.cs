@@ -10,13 +10,11 @@ namespace StutiBox.Api.Actors
 		string CurrentPositionString { get; }
 		double CurrentPositionSeconds { get; }
 		long CurrentPositionBytes { get; }
-		bool Repeat { get; }
 		EventHandler<BassEventArgs> BassActorEvent { get; set; }
 		string[] GetTags(int stream,bool closeStream = false);
 		string[] GetTags(string fullPath);
 		int GetStream(string fullPath);
 		dynamic GetFullTrackInformation(string fullPath);
-		bool ToggleRepeat();
 		bool Play(string fullPath);
 		bool Pause();
 		bool Resume();

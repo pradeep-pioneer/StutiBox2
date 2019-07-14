@@ -1,82 +1,82 @@
-import * as Axios from 'axios'
 import {IPlayerStatus, PlaybackState, RequestType, ControlRequest} from '../Models/Player'
+import {HubConnectionBuilder, HubConnection} from '@aspnet/signalr'
+
 class PlayerService {
-    private static async makePlayerRequest(requestType: RequestType, identifier: number) {
-        return await Axios.default.post("/api/Player/Request", {requestType, identifier}, {"headers": {"accept": "*/*","Content-Type": "application/json-patch+json"}})
-    }
-    private static async makePlayerControlRequest(controlRequest: ControlRequest, requestData: any) {
-        return await Axios.default.post("/api/Player/Control", {controlRequest, requestData}, {"headers": {"accept": "*/*","Content-Type": "application/json-patch+json"}})
-    }
-    static async GetPlayerStatus() {
-        return Axios.default.get<{},Axios.AxiosResponse>(
-            "/api/Player", 
-            {
-                "headers": {"accept": "*/*",
-                "Content-Type": "application/json-patch+json"
-            }}).then(response=>{
-                if(response.status!==200 || !response.data.status)
-                    throw new Error("Could not stop!")
-                return response.data as IPlayerStatus
-            })
+    static PlayerHubConnection: HubConnection
+    static onPlayerStateChange: any
+    static buildHub=async ()=>{
+        const hubBuilder = new HubConnectionBuilder()
+        PlayerService.PlayerHubConnection = hubBuilder
+            .withUrl('/playerstatus')
+            .withAutomaticReconnect()
+            .build()
+        PlayerService.PlayerHubConnection.on('ReceivePlaybackStatus',PlayerService.playerStatusReceived)
+        await PlayerService.PlayerHubConnection.start()
+        await PlayerService.GetPlayerStatus()
     }
 
-    static async Stop():Promise<IPlayerStatus> {
-        const beforeState = await this.GetPlayerStatus();
-        if(beforeState.playerState==PlaybackState.Paused||beforeState.playerState==PlaybackState.Playing){
-            const response = await this.makePlayerRequest(RequestType.Stop, 0)
-            if(response.status!==200 || !response.data.status)
-                throw new Error("Could not stop!")
-        }
-        return await this.GetPlayerStatus()
+    private static playerStatusReceived=(playerStatus: IPlayerStatus)=>{
+        if(PlayerService.onPlayerStateChange)
+            PlayerService.onPlayerStateChange(playerStatus)
     }
 
-    static async ToggleRepeat() {
-        const response = await this.makePlayerControlRequest(ControlRequest.RepeatToggle, null)
-        if(response.status!==200 || !response.data.status)
-            throw new Error("Could not stop!")
-        return await this.GetPlayerStatus()
+    private static makePlayerRequest=async(requestType: RequestType, identifier: number)=> {
+        const state = await PlayerService.PlayerHubConnection.invoke<IPlayerStatus>('requestAction',{requestType, identifier});
+        //PlayerService.playerStatusReceived(state)
+    }
+    private static makePlayerControlRequest=async(controlRequest: ControlRequest, requestData: any) =>{
+        const state = await PlayerService.PlayerHubConnection.invoke<IPlayerStatus>('controlAction', {controlRequest, requestData})
+        //PlayerService.playerStatusReceived(state)
+    }
+    static initialize = async(stateChangeCallback)=>{
+        PlayerService.onPlayerStateChange = stateChangeCallback
+        await PlayerService.buildHub()
+        //setInterval(await PlayerService.GetPlayerStatus,500)
+    }
+    static GetPlayerStatus = async()=> {
+        const state = await PlayerService.PlayerHubConnection.invoke<IPlayerStatus>('requestPlaybackStatus')
+        PlayerService.playerStatusReceived(state)
+        return state
     }
 
-    static async SetVolume(volume: number) {
-        const response = await this.makePlayerControlRequest(ControlRequest.VolumeAbsolute,volume)
-        if(response.status!==200 || !response.data.status)
-            throw new Error("Could not stop!")
-        return await this.GetPlayerStatus()
+    static Stop = async() => {
+        await PlayerService.makePlayerRequest(RequestType.Stop, 0)
     }
 
-    static async Seek(position: number) {
-        const response = await this.makePlayerControlRequest(ControlRequest.Seek,position)
-        if(response.status!==200 || !response.data.status)
-            throw new Error("Could not stop!")
-        return await this.GetPlayerStatus()
+    static ToggleRepeat=async() => {
+        await PlayerService.makePlayerControlRequest(ControlRequest.RepeatToggle, 0)
     }
 
-    static async PlayPause(id: number): Promise<IPlayerStatus> {
-        const beforeState = await this.GetPlayerStatus();
+    static SetVolume=async(volume: number)=> {
+        await PlayerService.makePlayerControlRequest(ControlRequest.VolumeAbsolute,volume)
+    }
+
+    static Seek=async(position: number)=> {
+        await PlayerService.makePlayerControlRequest(ControlRequest.Seek,position)
+    }
+
+    static EnqueueSong=async(id:number)=>{
+        await PlayerService.makePlayerRequest(RequestType.Enqueue, id)
+    }
+
+    static PlayPause=async(id: number): Promise<IPlayerStatus> =>{
+        const beforeState = await PlayerService.GetPlayerStatus();
         const shouldStop: boolean = (beforeState.playerState==PlaybackState.Playing||beforeState.playerState==PlaybackState.Paused)
                                     && (beforeState.currentLibraryItem && beforeState.currentLibraryItem.id!==id)
         if(shouldStop) {
-            var stopResult = await this.Stop();
-            if(stopResult.playerState==PlaybackState.Stopped){
-                const response = await this.makePlayerRequest(RequestType.Play, id)
-                if(response.status==200){
-                    if(!response.data.status)
-                        throw new Error(response.data.messages)
-                }else 
-                    throw new Error(response.statusText)
-            }
+            await PlayerService.Stop();
+            var stopResult = await PlayerService.GetPlayerStatus()
+            if(stopResult.playerState==PlaybackState.Stopped)
+                await PlayerService.makePlayerRequest(RequestType.Play, id)
+            else
+                await PlayerService.GetPlayerStatus();
         } else {
             const operation: RequestType = (beforeState.playerState==PlaybackState.Stopped)
                 ? RequestType.Play
                 : (beforeState.playerState==PlaybackState.Playing?RequestType.Pause:RequestType.Resume)
-            var response = await this.makePlayerRequest(operation, id)
-            if(response.status==200){
-                if(!response.data.status)
-                    throw new Error(response.data.messages)
-            } else 
-                throw new Error(response.statusText)
+            await PlayerService.makePlayerRequest(operation, id)
         }
-        return await this.GetPlayerStatus();
+        return await PlayerService.GetPlayerStatus();
     }
 }
 export default PlayerService
