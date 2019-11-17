@@ -10,18 +10,18 @@ namespace StutiBox.Api.Actors
 {
     public class LibraryActor : ILibraryActor
     {
-		private LibraryConfiguration Config;
-		private IBassActor bassActor;
-		public DateTime RefreshedAt { get; private set; }
+        private LibraryConfiguration Config;
+        private IBassActor bassActor;
+        public DateTime RefreshedAt { get; private set; }
         public LibraryActor(IOptionsMonitor<LibraryConfiguration> config, IBassActor bass)
         {
-			
-			Config = config.CurrentValue;
-			bassActor = bass ?? throw new ArgumentNullException(nameof(bass));
+
+            Config = config.CurrentValue;
+            bassActor = bass ?? throw new ArgumentNullException(nameof(bass));
             buildLibrary(bass);
         }
 
-        public LibraryItem this[int id]=> GetItem(id);
+        public LibraryItem this[int id] => GetItem(id);
 
         public LibraryItem GetItem(int id) => LibraryItems.FirstOrDefault(x => x.Id == id);
 
@@ -30,7 +30,8 @@ namespace StutiBox.Api.Actors
         public List<LibraryItem> Find(params string[] keywords)
         {
             List<LibraryItem> results = new List<LibraryItem>();
-            keywords.ToList().ForEach(item => { 
+            keywords.ToList().ForEach(item =>
+            {
                 var items = LibraryItems.Where(x => x.Name.ToLower().Contains(item.ToLower()));
                 results.AddRange(items);
             });
@@ -43,32 +44,32 @@ namespace StutiBox.Api.Actors
         }
 
         public bool Refresh()
-		{
-			bool result;
+        {
+            bool result;
 
-			try
-			{
-				buildLibrary(bassActor);
-				result = true;
-			}
-			catch
-			{
-				result = false;
-			}
-			return result;
-		}
+            try
+            {
+                buildLibrary(bassActor);
+                result = true;
+            }
+            catch
+            {
+                result = false;
+            }
+            return result;
+        }
 
         private void buildLibrary(IBassActor bass)
         {
             LibraryItems = new List<LibraryItem>();
             int counter = 1;
             var directory = new DirectoryInfo(Config.MusicDirectory);
-			var comparison = new Comparison<FileInfo>((x, y) => { return x.Name.CompareTo(y.Name); });
-			var musicFiles = directory.EnumerateFiles("*.mp3", SearchOption.AllDirectories).ToList();
-			musicFiles.Sort(comparison);
-			var items = musicFiles.Select(x => new LibraryItem(counter++, x.FullName, bassActor)).ToList();
-			LibraryItems.AddRange(items);
-			RefreshedAt = DateTime.Now;
+            var comparison = new Comparison<FileInfo>((x, y) => { return x.Name.CompareTo(y.Name); });
+            var musicFiles = directory.EnumerateFiles("*.mp3", SearchOption.AllDirectories).ToList();
+            musicFiles.Sort(comparison);
+            var items = musicFiles.OrderBy(x => x.Name).Select(x => new LibraryItem(counter++, x.FullName, bassActor)).ToList();
+            LibraryItems.AddRange(items);
+            RefreshedAt = DateTime.Now;
         }
     }
 }

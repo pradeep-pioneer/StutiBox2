@@ -23,6 +23,7 @@ namespace StutiBox.Api.Workers
         private const string ShutdownFileName = "shutdown.mp3";
         private readonly string AppDirectory;
         private bool IsShutdownRequested = false;
+
         public PushButtonMonitor(IPlayerActor playerActor, ILogger<PushButtonMonitor> logger, IBassActor bassActor)
         {
             this.playerActor = playerActor;
@@ -35,7 +36,8 @@ namespace StutiBox.Api.Workers
         {
             logger.Log(LogLevel.Information, "Started monitor");
             var libraryItem = new LibraryItem(-1, Path.Combine(AppDirectory, StartupFileName), bassActor);
-            playerActor.Play(libraryItem);
+            if (playerActor.PlaybackState == PlaybackState.Stopped)
+                playerActor.Play(libraryItem);
             Pi.Init<BootstrapWiringPi>();
             pin = Pi.Gpio[BcmPin.Gpio03];
             pin.PinMode = GpioPinDriveMode.Input;
@@ -51,7 +53,10 @@ namespace StutiBox.Api.Workers
                 IsShutdownRequested = true;
                 logger.Log(LogLevel.Information, "Shutdown signal received");
                 var libraryItem = new LibraryItem(-1, Path.Combine(AppDirectory, ShutdownFileName), bassActor);
-                playerActor.Play(libraryItem);
+                if (playerActor.PlaybackState == PlaybackState.Playing || playerActor.PlaybackState == PlaybackState.Paused)
+                    playerActor.Stop();
+                if (playerActor.PlaybackState == PlaybackState.Stopped)
+                    playerActor.Play(libraryItem);
                 Thread.Sleep(2000);
                 Process.Start(new ProcessStartInfo() { FileName = "sudo", Arguments = "shutdown now" });
             }

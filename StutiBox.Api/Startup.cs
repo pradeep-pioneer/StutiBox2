@@ -62,6 +62,7 @@ namespace StutiBox.Api
             services.AddSignalR();
             services.AddHostedService<StatusNotificationWorker>();
             services.AddHostedService<PushButtonMonitor>();
+            services.AddHostedService<MorningAlarmWorker>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
