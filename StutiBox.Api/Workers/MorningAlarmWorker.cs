@@ -7,6 +7,13 @@ using StutiBox.Api.Actors;
 
 namespace StutiBox.Api.Workers
 {
+    //this needs to be persisted - for now using hard coded values
+    public class AlarmConfiguration
+    {
+        public TimeSpan AlarmTime { get; set; }
+        public TimeSpan AlarmMissThreshold { get; set; }
+        public TimeSpan AlarmAutoTurnOffCheckTime { get; set; }
+    }
     public class MorningAlarmWorker : IHostedService, IDisposable
     {
         private readonly IPlayerActor playerActor;
@@ -14,11 +21,18 @@ namespace StutiBox.Api.Workers
         private readonly ILogger<MorningAlarmWorker> logger;
         private Timer _timer;
         private bool alarmTriggered = false;
+        public AlarmConfiguration AlarmConfiguration { get; protected set; }
         public MorningAlarmWorker(IPlayerActor playerActor, ILogger<MorningAlarmWorker> logger, ILibraryActor libraryActor)
         {
             this.playerActor = playerActor;
             this.logger = logger;
             this.libraryActor = libraryActor;
+            this.AlarmConfiguration = new AlarmConfiguration()
+            {
+                AlarmTime = TimeSpan.FromHours(6),
+                AlarmMissThreshold = TimeSpan.FromMinutes(20),
+                AlarmAutoTurnOffCheckTime = TimeSpan.FromHours(8)
+            };
         }
 
         public void Dispose()
@@ -37,7 +51,11 @@ namespace StutiBox.Api.Workers
         {
 
             var time = DateTime.Now;
-            if (time.Hour == 1 && time.Minute > 0 && !alarmTriggered)
+            var shouldTrigger = time.Hour == AlarmConfiguration.AlarmTime.Hours
+                && time.Minute >= AlarmConfiguration.AlarmTime.Minutes
+                && time.Minute <= time.Minute + AlarmConfiguration.AlarmMissThreshold.Minutes
+                && !alarmTriggered;
+            if (shouldTrigger)
             {
                 logger.LogInformation("Raising alarm");
                 alarmTriggered = true;
@@ -46,7 +64,7 @@ namespace StutiBox.Api.Workers
                 var libraryItem = libraryActor.GetItem(1);
                 playerActor.Play(libraryItem);
             }
-            else if (time.Hour == 8 && time.Minute == 0 && alarmTriggered)
+            else if (time.Hour == AlarmConfiguration.AlarmAutoTurnOffCheckTime.Hours && time.Minute >= AlarmConfiguration.AlarmAutoTurnOffCheckTime.Minutes && alarmTriggered)
             {
                 logger.LogInformation("Disarming alarm");
                 alarmTriggered = false;
