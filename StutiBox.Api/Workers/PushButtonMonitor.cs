@@ -20,9 +20,7 @@ namespace StutiBox.Api.Workers
         private readonly ILogger<PushButtonMonitor> logger;
         private IGpioPin pin;
         private const string StartupFileName = "startup.mp3";
-        private const string ShutdownFileName = "shutdown.mp3";
         private readonly string AppDirectory;
-        private bool IsShutdownRequested = false;
         private IShutdownActor _shutdownActor;
 
         public PushButtonMonitor(IPlayerActor playerActor, ILogger<PushButtonMonitor> logger, IBassActor bassActor, IShutdownActor shutdownActor)
