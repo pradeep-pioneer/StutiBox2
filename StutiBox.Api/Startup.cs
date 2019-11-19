@@ -59,10 +59,12 @@ namespace StutiBox.Api
             services.AddSingleton<IBassActor, BassActor>();
             services.AddSingleton<ILibraryActor, LibraryActor>();
             services.AddSingleton<IPlayerActor, PlayerActor>();
+            services.AddSingleton<IShutdownActor, ShutdownActor>();
             services.AddSignalR();
             services.AddHostedService<StatusNotificationWorker>();
             services.AddHostedService<PushButtonMonitor>();
             services.AddHostedService<MorningAlarmWorker>();
+            services.AddHostedService<RestartWorker>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -23,13 +23,15 @@ namespace StutiBox.Api.Workers
         private const string ShutdownFileName = "shutdown.mp3";
         private readonly string AppDirectory;
         private bool IsShutdownRequested = false;
+        private IShutdownActor _shutdownActor;
 
-        public PushButtonMonitor(IPlayerActor playerActor, ILogger<PushButtonMonitor> logger, IBassActor bassActor)
+        public PushButtonMonitor(IPlayerActor playerActor, ILogger<PushButtonMonitor> logger, IBassActor bassActor, IShutdownActor shutdownActor)
         {
             this.playerActor = playerActor;
             this.logger = logger;
             this.bassActor = bassActor;
             this.AppDirectory = AppDomain.CurrentDomain.BaseDirectory;
+            _shutdownActor = shutdownActor;
         }
 
         public Task StartAsync(CancellationToken stoppingToken)
@@ -38,28 +40,18 @@ namespace StutiBox.Api.Workers
             var libraryItem = new LibraryItem(-1, Path.Combine(AppDirectory, StartupFileName), bassActor);
             if (playerActor.PlaybackState == PlaybackState.Stopped)
                 playerActor.Play(libraryItem);
+            /*
             Pi.Init<BootstrapWiringPi>();
             pin = Pi.Gpio[BcmPin.Gpio03];
             pin.PinMode = GpioPinDriveMode.Input;
             pin.RegisterInterruptCallback(EdgeDetection.FallingEdge, ISRCallback);
+            */
             return Task.CompletedTask;
         }
 
         void ISRCallback()
         {
-            //debounce the signal;
-            if (!IsShutdownRequested)
-            {
-                IsShutdownRequested = true;
-                logger.Log(LogLevel.Information, "Shutdown signal received");
-                var libraryItem = new LibraryItem(-1, Path.Combine(AppDirectory, ShutdownFileName), bassActor);
-                if (playerActor.PlaybackState == PlaybackState.Playing || playerActor.PlaybackState == PlaybackState.Paused)
-                    playerActor.Stop();
-                if (playerActor.PlaybackState == PlaybackState.Stopped)
-                    playerActor.Play(libraryItem);
-                Thread.Sleep(2000);
-                Process.Start(new ProcessStartInfo() { FileName = "sudo", Arguments = "shutdown now" });
-            }
+            _shutdownActor.Initiate(ShutdownType.ShutdownImmediate);
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

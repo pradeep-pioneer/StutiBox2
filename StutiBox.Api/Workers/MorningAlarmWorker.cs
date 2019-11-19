@@ -4,16 +4,10 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using StutiBox.Api.Actors;
+using StutiBox.Api.Config;
 
 namespace StutiBox.Api.Workers
 {
-    //this needs to be persisted - for now using hard coded values
-    public class AlarmConfiguration
-    {
-        public TimeSpan AlarmTime { get; set; }
-        public TimeSpan AlarmMissThreshold { get; set; }
-        public TimeSpan AlarmAutoTurnOffCheckTime { get; set; }
-    }
     public class MorningAlarmWorker : IHostedService, IDisposable
     {
         private readonly IPlayerActor playerActor;
@@ -31,7 +25,8 @@ namespace StutiBox.Api.Workers
             {
                 AlarmTime = TimeSpan.FromHours(6),
                 AlarmMissThreshold = TimeSpan.FromMinutes(20),
-                AlarmAutoTurnOffCheckTime = TimeSpan.FromHours(8)
+                AlarmAutoTurnOffCheckTime = TimeSpan.FromHours(8),
+                Enabled = true
             };
         }
 
@@ -63,8 +58,9 @@ namespace StutiBox.Api.Workers
                     playerActor.Stop();
                 var libraryItem = libraryActor.GetItem(1);
                 playerActor.Play(libraryItem);
+                alarmTriggered = false;
             }
-            else if (time.Hour == AlarmConfiguration.AlarmAutoTurnOffCheckTime.Hours && time.Minute >= AlarmConfiguration.AlarmAutoTurnOffCheckTime.Minutes && alarmTriggered)
+            else if (time.Hour == AlarmConfiguration.AlarmAutoTurnOffCheckTime.Hours && time.Minute >= AlarmConfiguration.AlarmAutoTurnOffCheckTime.Minutes)
             {
                 logger.LogInformation("Disarming alarm");
                 alarmTriggered = false;
