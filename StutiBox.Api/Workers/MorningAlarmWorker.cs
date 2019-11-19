@@ -58,7 +58,6 @@ namespace StutiBox.Api.Workers
                     playerActor.Stop();
                 var libraryItem = libraryActor.GetItem(1);
                 playerActor.Play(libraryItem);
-                alarmTriggered = false;
             }
             else if (time.Hour == AlarmConfiguration.AlarmAutoTurnOffCheckTime.Hours && time.Minute >= AlarmConfiguration.AlarmAutoTurnOffCheckTime.Minutes)
             {
