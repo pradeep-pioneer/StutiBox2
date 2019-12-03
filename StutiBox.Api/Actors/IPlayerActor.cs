@@ -20,5 +20,6 @@ namespace StutiBox.Api.Actors
         bool ConversationFinished();
         bool Enqueue(int identifier);
         bool Repeat { get; }
+        Playlist NowPlaying { get; }
     }
 }

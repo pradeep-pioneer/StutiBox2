@@ -5,6 +5,7 @@ using StutiBox.Api.Actors;
 using System.Threading.Tasks;
 using System.Threading;
 using StutiBox.Api.Models;
+using System.Linq;
 
 namespace StutiBox.Api.Workers
 {
@@ -40,7 +41,8 @@ namespace StutiBox.Api.Workers
                 CurrentPositionBytes = PlayerActor.BassActor.CurrentPositionBytes,
                 CurrentPositionSeconds = PlayerActor.BassActor.CurrentPositionSeconds,
                 CurrentPositionString = PlayerActor.BassActor.CurrentPositionString,
-                Repeat = PlayerActor.Repeat
+                Repeat = PlayerActor.Repeat,
+                NowPlaying = PlayerActor.NowPlaying.Items.Values.ToList()
             };
         }
     }

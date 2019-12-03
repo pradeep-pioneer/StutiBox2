@@ -38,6 +38,7 @@ namespace StutiBox.Api.Workers
             var libraryItem = new LibraryItem(-1, Path.Combine(AppDirectory, StartupFileName), bassActor);
             if (playerActor.PlaybackState == PlaybackState.Stopped)
                 playerActor.Play(libraryItem);
+
             Pi.Init<BootstrapWiringPi>();
             pin = Pi.Gpio[BcmPin.Gpio03];
             pin.PinMode = GpioPinDriveMode.Input;

@@ -10,6 +10,7 @@ import PlayerService from "../Services/Player";
 import { MediaItemsGrid } from "../Components/MediaItemsGrid";
 import { PlayerHeader } from "../Components/PlayerHeader";
 import { PhotoSlider } from "../Components/PhotoSlider";
+import {PlaylistGrid} from "../Components/PlaylistGrid";
 
 export interface IHomeState {
   libraryStatus?: ILibraryState;
@@ -67,6 +68,10 @@ class Home extends React.Component<{}, IHomeState> {
     this.setState({ showPlayer: show });
   };
 
+  nowPlayingModal = (show: boolean) => {
+    this.setState({showPlaylist: show});
+  }
+
   isLoaded = () => {
     return this.state.libraryStatus && this.state.playerStatus ? true : false;
   };
@@ -102,12 +107,27 @@ class Home extends React.Component<{}, IHomeState> {
                     }
                   />
                 </Button>
+                <Button
+                  size="large"
+                  type="primary"
+                  shape="circle-outline"
+                  icon="play-circle" onClick={() => this.nowPlayingModal(true)}>
+
+                  </Button>
               </div>
               <Card className="product-card">
                 <PhotoSlider />
               </Card>
             </Col>
           </Row>
+          <Modal
+            width="95%"
+            style={{ top: "1rem"}}
+            visible={this.state.showPlaylist}
+            onCancel={() => this.nowPlayingModal(false)}
+            onOk={() => this.nowPlayingModal(false)}>
+              <PlaylistGrid playlist={this.state.playerStatus.nowPlaying}/>
+            </Modal>
           <Modal
             width="95%"
             style={{ top: "1rem"}}

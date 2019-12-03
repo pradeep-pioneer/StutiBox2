@@ -105,6 +105,16 @@ export class PlayerHeader extends React.Component<IPlayerHeaderProps>{
                         }/>
                 </Col>
             </Row>
+            <Row>
+                <Col xs={{span: 24}} sm={{span: 24}} md={{span: 10}} lg={{span: 12}} xl={{span: 6}} xxl={{span: 6}}>
+                <Button
+                    type='primary'
+                    size='large'
+                    disabled={false}
+                    icon='retweet'
+                    onClick={async()=>await this.props.refreshCommand()}>Refresh Library</Button>
+                </Col>
+            </Row>
             </div>
         )
     }

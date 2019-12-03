@@ -7,9 +7,9 @@ namespace StutiBox.Api.Models
 {
     public class Playlist
     {
-        public int CurrentIndex {get; private set;}
-        private ConcurrentDictionary<int, LibraryItem> Items {get; set;}
-        public int Count {get=>Items.Count;}
+        public int CurrentIndex { get; private set; }
+        public ConcurrentDictionary<int, LibraryItem> Items { get; private set; }
+        public int Count { get => Items.Count; }
         public Playlist()
         {
             Items = new ConcurrentDictionary<int, LibraryItem>();
@@ -18,50 +18,50 @@ namespace StutiBox.Api.Models
 
         public KeyValuePair<int, LibraryItem> Enqueue(LibraryItem item)
         {
-            if(CurrentIndex<0)
+            if (CurrentIndex < 0)
                 CurrentIndex++;
             var index = Items.Count;
-            Items[index]=item;
+            Items[index] = item;
             return new KeyValuePair<int, LibraryItem>(index, item);
         }
 
         public void Dequeue(int index)
         {
-            if(Items.ContainsKey(index))
+            if (Items.ContainsKey(index))
                 Items.TryRemove(index, out LibraryItem item);
-            while(index<Items.Count)
+            while (index < Items.Count)
             {
                 var successful = Items.TryRemove(++index, out LibraryItem removed);
-                if(successful)
-                    Items[index-1]=removed;
+                if (successful)
+                    Items[index - 1] = removed;
             }
-            if(CurrentIndex>Items.Count-1)
+            if (CurrentIndex > Items.Count - 1)
                 CurrentIndex = 0;
         }
 
         public KeyValuePair<int, LibraryItem> Forward()
         {
             CurrentIndex++;
-            if(Items.Count<1)
-                CurrentIndex=-1;
-            else if(CurrentIndex>Items.Count-1)
+            if (Items.Count < 1)
+                CurrentIndex = -1;
+            else if (CurrentIndex > Items.Count - 1)
                 CurrentIndex = 0;
-            return new KeyValuePair<int, LibraryItem>(CurrentIndex,Items[CurrentIndex]);
+            return new KeyValuePair<int, LibraryItem>(CurrentIndex, Items[CurrentIndex]);
         }
 
         public KeyValuePair<int, LibraryItem> Current()
         {
-            if(Items.Count>0)
-                return new KeyValuePair<int, LibraryItem>(CurrentIndex,Items[CurrentIndex]);
+            if (Items.Count > 0)
+                return new KeyValuePair<int, LibraryItem>(CurrentIndex, Items[CurrentIndex]);
             return new KeyValuePair<int, LibraryItem>(-1, null);
         }
 
         public void Reset()
         {
-            if(Items.Count>0)
-                CurrentIndex=0;
+            if (Items.Count > 0)
+                CurrentIndex = 0;
             else
-                CurrentIndex=-1;
+                CurrentIndex = -1;
         }
     }
 }

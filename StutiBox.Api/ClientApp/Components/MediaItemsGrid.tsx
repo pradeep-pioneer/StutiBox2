@@ -27,7 +27,7 @@ export class MediaItemsGrid extends React.Component<IMediaItemsGridProps> {
                             <Button
                                 type={this.props.playerStatus.currentLibraryItem && this.props.playerStatus.currentLibraryItem.id===item.id && this.props.playerStatus.playerState===PlaybackState.Playing?'primary':'default' }
                                 shape='circle' 
-                                icon={this.props.playerStatus.currentLibraryItem && this.props.playerStatus.currentLibraryItem.id===item.id && this.props.playerStatus.playerState===PlaybackState.Playing?'pause-circle':'plus-circle' }
+                                icon={'plus-circle'}
                                 onClick={()=>this.props.enqueueCommand(item.id)}/>]
                         }>
                         <List.Item.Meta title={item.name} description={item.fullPath}/>

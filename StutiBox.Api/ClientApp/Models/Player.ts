@@ -46,5 +46,6 @@ interface IPlayerStatus {
     currentPositionSeconds?: number
     currentPositionString?: string
     repeat?: boolean
-  }
+    nowPlaying: IMediaItem[]
+}
 export {PlaybackState, RequestType, IPlayerStatus, ControlRequest}

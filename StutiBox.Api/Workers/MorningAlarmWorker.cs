@@ -16,11 +16,13 @@ namespace StutiBox.Api.Workers
         private Timer _timer;
         private bool alarmTriggered = false;
         public AlarmConfiguration AlarmConfiguration { get; protected set; }
+        private byte previousVolume = 0;
         public MorningAlarmWorker(IPlayerActor playerActor, ILogger<MorningAlarmWorker> logger, ILibraryActor libraryActor)
         {
             this.playerActor = playerActor;
             this.logger = logger;
             this.libraryActor = libraryActor;
+            this.previousVolume = playerActor.BassActor.CurrentVolume;
             this.AlarmConfiguration = new AlarmConfiguration()
             {
                 AlarmTime = TimeSpan.FromHours(6),
@@ -57,11 +59,14 @@ namespace StutiBox.Api.Workers
                 if (playerActor.PlaybackState == PlaybackState.Playing || playerActor.PlaybackState == PlaybackState.Paused)
                     playerActor.Stop();
                 var libraryItem = libraryActor.GetItem(1);
+                this.previousVolume = playerActor.BassActor.CurrentVolume;
+                playerActor.Volume(100);
                 playerActor.Play(libraryItem);
             }
-            else if (time.Hour == AlarmConfiguration.AlarmAutoTurnOffCheckTime.Hours && time.Minute >= AlarmConfiguration.AlarmAutoTurnOffCheckTime.Minutes)
+            else if (time.Hour == AlarmConfiguration.AlarmAutoTurnOffCheckTime.Hours && time.Minute >= AlarmConfiguration.AlarmAutoTurnOffCheckTime.Minutes && alarmTriggered)
             {
                 logger.LogInformation("Disarming alarm");
+                playerActor.Volume(previousVolume);
                 alarmTriggered = false;
                 if (playerActor.PlaybackState == PlaybackState.Playing || playerActor.PlaybackState == PlaybackState.Paused)
                     playerActor.Stop();
