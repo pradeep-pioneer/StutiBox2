@@ -23,7 +23,8 @@ namespace StutiBox.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddControllers()
+                .AddNewtonsoftJson(options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
             services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v2", new OpenApiInfo { Title = "Stuti Box 2", Version = "2.0.0" });
@@ -43,9 +44,12 @@ namespace StutiBox.Api
             services.AddControllersWithViews()
                 .AddNewtonsoftJson();
             services.AddRazorPages();
+            /*
+             * ToDo: Remove this junk if no longer needed
             //Spa Service
             services.AddNodeServices();
             services.AddSpaPrerenderer();
+            */
             services.AddLogging();
 
             //setup DI Here
@@ -73,11 +77,13 @@ namespace StutiBox.Api
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+                /*
+                 * ToDo: Remove this junk if no longer needed
                 app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions
                 {
                     HotModuleReplacement = true,
                     ReactHotModuleReplacement = true
-                });
+                });*/
             }
             else
             {
@@ -99,6 +105,7 @@ namespace StutiBox.Api
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapControllers();
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");

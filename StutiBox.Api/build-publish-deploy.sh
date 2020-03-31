@@ -29,7 +29,7 @@ echo "removing files from $address ..."
 ssh -i ~/.ssh/id_pi_rsa $address "rm ~/StutiBox/ -rf"
 
 echo "copying published files to $address ..."
-scp -i ~/.ssh/id_pi_rsa -r bin/release/netcoreapp3.0/linux-arm/publish/ $address:~/StutiBox/
+scp -i ~/.ssh/id_pi_rsa -r bin/release/netcoreapp3.1/linux-arm/publish/ $address:~/StutiBox/
 
 echo "Copying the service files to designated location on $address"
 ssh -i ~/.ssh/id_pi_rsa $address sudo cp "/home/pi/StutiBox/StutiBox2.service" "/lib/systemd/system/StutiBox2.service"

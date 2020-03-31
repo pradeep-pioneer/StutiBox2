@@ -1,9 +1,10 @@
 import {IPlayerStatus, PlaybackState, RequestType, ControlRequest} from '../Models/Player'
-import {HubConnectionBuilder, HubConnection} from '@aspnet/signalr'
+import {HubConnectionBuilder, HubConnection, HubConnectionState} from '@aspnet/signalr'
 
 class PlayerService {
     static PlayerHubConnection: HubConnection
     static onPlayerStateChange: any
+    static timerId: number = -1;
     static buildHub=async ()=>{
         const hubBuilder = new HubConnectionBuilder()
         PlayerService.PlayerHubConnection = hubBuilder
@@ -11,8 +12,25 @@ class PlayerService {
             .withAutomaticReconnect()
             .build()
         PlayerService.PlayerHubConnection.on('ReceivePlaybackStatus',PlayerService.playerStatusReceived)
+        PlayerService.PlayerHubConnection.onclose(error => {
+            console.log("Hub Disconnected: " + error)
+            PlayerService.timerId = window.setInterval(PlayerService.ConnectionManager,2000)
+        })
+        PlayerService.PlayerHubConnection.onreconnected(connectionId=>{
+            console.info("Connected: id="+connectionId)
+            if(PlayerService.timerId!==-1)
+                clearInterval(PlayerService.timerId)
+        })
         await PlayerService.PlayerHubConnection.start()
         await PlayerService.GetPlayerStatus()
+        window.setInterval(PlayerService.ConnectionManager,10000);
+    }
+
+    private static ConnectionManager = (): void =>
+    {
+        if(PlayerService.PlayerHubConnection.state === HubConnectionState.Disconnected)
+            PlayerService.PlayerHubConnection.start();
+        console.log("Service State: " + PlayerService.PlayerHubConnection.state)
     }
 
     private static playerStatusReceived=(playerStatus: IPlayerStatus)=>{
