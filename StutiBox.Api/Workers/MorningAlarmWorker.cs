@@ -61,10 +61,10 @@ namespace StutiBox.Api.Workers
                     playerActor.Stop();
                 if (!playerActor.Repeat)
                     playerActor.ToggleRepeat();
-                var libraryItem = libraryActor.GetItem(AlarmConfiguration.MediaItemId);
+                playerActor.NowPlaying.Clear();
                 this.previousVolume = playerActor.BassActor.CurrentVolume;
                 playerActor.Volume(100);
-                playerActor.Play(libraryItem);
+                playerActor.Enqueue(AlarmConfiguration.MediaItemId);
             }
             else if (time.Hour == AlarmConfiguration.AlarmAutoTurnOffCheckTime.Hours && time.Minute >= AlarmConfiguration.AlarmAutoTurnOffCheckTime.Minutes && alarmTriggered)
             {

@@ -25,6 +25,6 @@ ssh-copy-id  -i [filename:example ~/.ssh/id_pi_rsa] [pi_username@pi_ip_address]
 1. Add option to configure Raspberry Pi display.
 2. Migrate the volume settings to UnoSquare library from BASS based calls.
 3. Add screen to configure alarms.
-4. Add alarm configuration storage to support persistance of settings.
+4. Add alarm configuration storage to support persistance of settings. [In Progress]
 5. Add Systems Configuration Panel to manage configurations.
 6. ~~Add auto restart to make sure that the system is fresh [Done].~~

@@ -44,7 +44,7 @@ namespace StutiBox.Api.Models
             CurrentIndex++;
             if (Items.Count < 1)
                 CurrentIndex = -1;
-            else if (CurrentIndex > Items.Count - 1)
+            else if (CurrentIndex >= Items.Count - 1)
                 CurrentIndex = 0;
             return new KeyValuePair<int, LibraryItem>(CurrentIndex, Items[CurrentIndex]);
         }
@@ -54,6 +54,13 @@ namespace StutiBox.Api.Models
             if (Items.Count > 0)
                 return new KeyValuePair<int, LibraryItem>(CurrentIndex, Items[CurrentIndex]);
             return new KeyValuePair<int, LibraryItem>(-1, null);
+        }
+
+        public void Clear()
+        {
+            Items = new ConcurrentDictionary<int, LibraryItem>();
+            CurrentIndex = -1;
+
         }
 
         public void Reset()
