@@ -15,7 +15,7 @@ namespace StutiBox.Api.Workers
         private readonly ILogger<MorningAlarmWorker> logger;
         private Timer _timer;
         private bool alarmTriggered = false;
-        public AlarmConfiguration AlarmConfiguration { get; protected set; }
+        public AlarmConfiguration AlarmConfiguration { get; set; }
         private byte previousVolume = 0;
         public MorningAlarmWorker(IPlayerActor playerActor, ILogger<MorningAlarmWorker> logger, ILibraryActor libraryActor)
         {
@@ -28,7 +28,8 @@ namespace StutiBox.Api.Workers
                 AlarmTime = TimeSpan.FromHours(6),
                 AlarmMissThreshold = TimeSpan.FromMinutes(20),
                 AlarmAutoTurnOffCheckTime = TimeSpan.FromHours(8),
-                Enabled = true
+                Enabled = true,
+                MediaItemId = 1
             };
         }
 
@@ -58,7 +59,9 @@ namespace StutiBox.Api.Workers
                 alarmTriggered = true;
                 if (playerActor.PlaybackState == PlaybackState.Playing || playerActor.PlaybackState == PlaybackState.Paused)
                     playerActor.Stop();
-                var libraryItem = libraryActor.GetItem(1);
+                if (!playerActor.Repeat)
+                    playerActor.ToggleRepeat();
+                var libraryItem = libraryActor.GetItem(AlarmConfiguration.MediaItemId);
                 this.previousVolume = playerActor.BassActor.CurrentVolume;
                 playerActor.Volume(100);
                 playerActor.Play(libraryItem);

@@ -9,6 +9,8 @@ using StutiBox.Api.Actors;
 using StutiBox.Api.Hubs;
 using Microsoft.AspNetCore.SpaServices.Webpack;
 using StutiBox.Api.Workers;
+using System;
+
 namespace StutiBox.Api
 {
     public class Startup
@@ -58,6 +60,8 @@ namespace StutiBox.Api
 
         private void ConfigureService(IServiceCollection services)
         {
+            var envVar = Environment.GetEnvironmentVariable("DEVICE");
+            var device = string.IsNullOrWhiteSpace(envVar) ? "mac" : envVar;
             //configuration
             services.Configure<LibraryConfiguration>(Configuration.GetSection("libraryConfiguration"));
             services.AddSingleton<IBassActor, BassActor>();
@@ -65,9 +69,15 @@ namespace StutiBox.Api
             services.AddSingleton<IPlayerActor, PlayerActor>();
             services.AddSingleton<IShutdownActor, ShutdownActor>();
             services.AddSignalR();
+            if (device != "mac")
+            {
+                services.AddHostedService<PushButtonMonitor>();
+            }
+
+            services.AddSingleton<MorningAlarmWorker>();
             services.AddHostedService<StatusNotificationWorker>();
-            services.AddHostedService<PushButtonMonitor>();
-            services.AddHostedService<MorningAlarmWorker>();
+
+            services.AddHostedService(provider => provider.GetService<MorningAlarmWorker>());
             services.AddHostedService<RestartWorker>();
         }
 

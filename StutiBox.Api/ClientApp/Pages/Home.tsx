@@ -11,11 +11,12 @@ import { MediaItemsGrid } from "../Components/MediaItemsGrid";
 import { PlayerHeader } from "../Components/PlayerHeader";
 import { PhotoSlider } from "../Components/PhotoSlider";
 import {PlaylistGrid} from "../Components/PlaylistGrid";
-
+import AlarmControl from '../Components/Alarm'
 export interface IHomeState {
   libraryStatus?: ILibraryState;
   showPlayer: boolean;
   showPlaylist: boolean;
+  showAlarm: boolean;
   message?: string;
   playerStatus?: IPlayerStatus;
 }
@@ -23,7 +24,7 @@ export interface IHomeState {
 class Home extends React.Component<{}, IHomeState> {
   constructor(props) {
     super(props);
-    this.state = { showPlayer: false, showPlaylist: false };
+    this.state = { showPlayer: false, showPlaylist: false, showAlarm: false };
   }
 
   async componentDidMount() {
@@ -66,6 +67,10 @@ class Home extends React.Component<{}, IHomeState> {
 
   playerModal = (show: boolean) => {
     this.setState({ showPlayer: show });
+  };
+
+  alarmModal = (show: boolean) => {
+    this.setState({ showAlarm: show });
   };
 
   nowPlayingModal = (show: boolean) => {
@@ -114,6 +119,13 @@ class Home extends React.Component<{}, IHomeState> {
                   icon="play-circle" onClick={() => this.nowPlayingModal(true)}>
 
                   </Button>
+                  <Button
+                  size="large"
+                  type="primary"
+                  shape="circle-outline"
+                  icon="play-circle" onClick={() => this.alarmModal(true)}>
+
+                  </Button>
               </div>
               <Card className="product-card">
                 <PhotoSlider />
@@ -155,6 +167,14 @@ class Home extends React.Component<{}, IHomeState> {
                 playCommand={this.playSong}
               />
             </Card>
+          </Modal>
+          <Modal width="95%"
+            style={{ top: "1rem"}}
+            visible={this.state.showAlarm}
+            onCancel={() => this.alarmModal(false)}
+            onOk={() => this.alarmModal(false)}
+            >
+            <AlarmControl alarmTime = "alarmTime" alarmMissThreshold = "alarmMissThreshold" alarmAutoTurnOffCheckTime = "alarmAutoTurnOffCheckTime" enabled = {true}/>
           </Modal>
         </Row>
       );

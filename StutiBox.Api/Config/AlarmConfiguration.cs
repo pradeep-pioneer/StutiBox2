@@ -8,5 +8,6 @@ namespace StutiBox.Api.Config
         public TimeSpan AlarmMissThreshold { get; set; }
         public TimeSpan AlarmAutoTurnOffCheckTime { get; set; }
         public bool Enabled { get; set; }
+        public int MediaItemId { get; set; }
     }
 }
